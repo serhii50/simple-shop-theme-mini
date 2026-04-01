@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.name | default: page.title | default: site.title }}</title>
+  {% seo %}
+</head>
+<body>
+  <header>
+    <a href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav>
+      <a href="{{ '/cart' | relative_url }}">Корзина (<strong id="cart-badge">0</strong>)</a>
+    </nav>
+  </header>
+
+  <main>
+    {{ content }}
+  </main>
+
+  <footer>
+    <p>&copy; {{ "now" | date: "%Y" }} {{ site.title }}</p>
+  </footer>
+
+  <script>
+    function updateBadge() {
+      let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
+      let badge = document.getElementById('cart-badge');
+      if (badge) {
+        badge.innerText = cart.length;
+      }
+    }
+    // Вызываем проверку корзины при загрузке любой страницы
+    document.addEventListener("DOMContentLoaded", updateBadge);
+  </script>
+</body>
+</html>
