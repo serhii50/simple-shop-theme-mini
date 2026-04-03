@@ -1,0 +1,4 @@
+id,name,price,description,images
+item1,Тестовый Товар 1,150,"Отличный тестовый товар для проверки темы.","https://placehold.co/400x400/png;https://placehold.co/400x400/e0e0e0"
+item2,Тестовый Товар 2,300,"Еще один товар с очень классными характеристиками.","https://placehold.co/400x400/png"
+item3,Тестовый Товар 3,450,"Крутой товар, который все хотят купить.","https://placehold.co/400x400/png"

@@ -1,0 +1,7 @@
+title: "Главная - Тестовый Магазин"
+description: "Это тестовая среда для отладки темы"
+currency: "грн."
+whatsapp_phone: "380123456789"
+telegram_user: "myshopadmin"
+plugins:
+  - jekyll-seo-tag

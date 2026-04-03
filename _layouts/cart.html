@@ -1,0 +1,103 @@
+---
+layout: default
+---
+
+<h1>Ваша корзина</h1>
+
+<div id="cart-items" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
+  <p>Загрузка...</p>
+</div>
+
+<div id="cart-summary" style="display: none; padding: 20px; background: #f9f9f9; border-radius: 8px;">
+  <h2>Итого: <span id="total-price">0</span> {{ site.currency }}</h2>
+  <div style="display: flex; gap: 10px; margin-top: 15px;">
+    <button onclick="checkout('wa')" style="padding: 10px; background: #25D366; color: white; border: none; border-radius: 4px; cursor: pointer; flex: 1;">WhatsApp</button>
+    <button onclick="checkout('tg')" style="padding: 10px; background: #0088cc; color: white; border: none; border-radius: 4px; cursor: pointer; flex: 1;">Telegram</button>
+  </div>
+  <button onclick="clearCart()" style="margin-top: 15px; background: none; border: none; color: red; cursor: pointer; text-decoration: underline;">Очистить корзину</button>
+</div>
+
+<script>
+  function loadCart() {
+    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
+    let container = document.getElementById('cart-items');
+    let summary = document.getElementById('cart-summary');
+    let totalSpan = document.getElementById('total-price');
+
+    container.innerHTML = '';
+    let total = 0;
+
+    if (cart.length === 0) {
+      container.innerHTML = '<p style="color: grey;">В корзине пусто</p><a href="{{ "/" | relative_url }}">Вернуться к покупкам</a>';
+      summary.style.display = 'none';
+      if(window.updateBadge) window.updateBadge();
+      return;
+    }
+
+    summary.style.display = 'block';
+
+    cart.forEach((item, index) => {
+      total += parseFloat(item.price) || 0;
+      let div = document.createElement('div');
+      div.style.display = 'flex';
+      div.style.gap = '15px';
+      div.style.alignItems = 'center';
+      div.style.border = '1px solid #eee';
+      div.style.padding = '10px';
+      div.style.borderRadius = '8px';
+      
+      div.innerHTML = `
+        <img src="${item.image.replace(/"/g, '&quot;')}" alt="${item.title.replace(/"/g, '&quot;')}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
+        <div style="flex-grow: 1;">
+          <strong>${item.title.replace(/</g, '&lt;')}</strong><br>
+          <span style="color: #0366d6;">${item.price.replace(/</g, '&lt;')} {{ site.currency }}</span>
+        </div>
+        <button onclick="removeItem(${index})" style="background: none; border: none; color: red; cursor: pointer;">Удалить</button>
+      `;
+      container.appendChild(div);
+    });
+
+    totalSpan.innerText = total.toLocaleString('ru-RU');
+    if(window.updateBadge) window.updateBadge();
+  }
+
+  function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('mySimpleCart', JSON.stringify(cart));
+    loadCart();
+  }
+
+  function clearCart() {
+    if(confirm('Очистить корзину?')) {
+      localStorage.removeItem('mySimpleCart');
+      loadCart();
+    }
+  }
+
+  function checkout(messenger) {
+    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
+    let total = 0;
+    let message = "Здравствуйте! Хочу сделать заказ:\n\n";
+    
+    cart.forEach((item, index) => {
+      message += `${index + 1}. ${item.title} — ${item.price} {{ site.currency }}\n`;
+      total += parseFloat(item.price) || 0;
+    });
+    
+    message += `\n🛒 *Сумма заказа:* ${total.toLocaleString('ru-RU')} {{ site.currency }}`;
+
+    let phone = "{{ site.whatsapp_phone }}";
+    let tgUser = "{{ site.telegram_user }}";
+    
+    let url = messenger === 'wa' 
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      : `https://t.me/${tgUser}?text=${encodeURIComponent(message)}`;
+      
+    localStorage.removeItem('mySimpleCart');
+    loadCart();
+    window.location.href = url;
+  }
+
+  document.addEventListener('DOMContentLoaded', loadCart);
+</script>
