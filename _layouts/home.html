@@ -2,16 +2,99 @@
 layout: default
 ---
 
+{% comment %} Собираем уникальные теги {% endcomment %}
+{% assign all_tags = "" %}
+{% for item in site.data.products %}
+  {% if item.tags != "" and item.tags != nil %}
+    {% assign item_tags = item.tags | split: ";" %}
+    {% for tag in item_tags %}
+      {% unless all_tags contains tag %}
+        {% assign all_tags = all_tags | append: tag | append: "," %}
+      {% endunless %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+{% assign unique_tags = all_tags | split: "," | uniq %}
+
 <h1>Каталог товаров ({{ site.data.products.size }} шт)</h1>
 
-<div style="display: flex; flex-wrap: wrap; gap: 20px;">
-  {% for item in site.data.products %}
-    <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}" style="text-decoration: none; color: inherit; width: 200px;">
-      <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; height: 100%;">
-        <img src="{{ item.image }}" alt="{{ item.title }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;">
-        <h3 style="font-size: 16px; margin: 10px 0;">{{ item.title }}</h3>
-        <p style="font-weight: bold; margin: 0;">{{ item.price }} {{ site.currency }}</p>
-      </div>
-    </a>
+{% comment %} Фильтры по тегам {% endcomment %}
+{% if unique_tags.size > 0 %}
+<div style="margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
+  <button id="tag-all" onclick="filterByTag(null, this)" style="font-size: 12px; padding: 4px 12px; border-radius: 20px; border: none; background: #333; color: #fff; cursor: pointer;">Все</button>
+  {% for tag in unique_tags %}
+    {% if tag != "" %}
+    <button id="tag-{{ tag }}" onclick="filterByTag('{{ tag }}', this)" class="tag-btn" style="font-size: 12px; padding: 4px 12px; border-radius: 20px; border: 1px solid #ddd; background: #f5f5f5; cursor: pointer;">{{ tag }}</button>
+    {% endif %}
   {% endfor %}
 </div>
+{% endif %}
+
+<div id="product-grid" style="display: flex; flex-wrap: wrap; gap: 20px;">
+  {% for item in site.data.products %}
+    {% assign images = item.images | split: ';' %}
+    {% assign main_image = images[0] %}
+    {% assign item_tags = item.tags | split: ';' %}
+
+    <div class="product-card" data-tags="{{ item.tags }}" style="width: 200px;">
+      <div style="border: 1px solid #ddd; border-radius: 8px; padding: 10px; height: 100%; display: flex; flex-direction: column;">
+
+        <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}" style="text-decoration: none; color: inherit;">
+          <img src="{{ main_image }}" alt="{{ item.name }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 4px;">
+          <h3 style="font-size: 14px; margin: 8px 0 4px;">{{ item.name }}</h3>
+        </a>
+
+        {% if item.tags != "" and item.tags != nil %}
+        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">
+          {% for tag in item_tags %}
+            {% if tag != "" %}
+            <span style="font-size: 11px; background: #f0f0f0; color: #666; padding: 2px 6px; border-radius: 10px;">#{{ tag }}</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+          <p style="font-weight: bold; margin: 0;">{{ item.price }} {{ site.currency }}</p>
+          <button
+            onclick="addToCartFromList('{{ item.name | escape }}', '{{ item.price }}', '{{ main_image }}')"
+            style="background: #333; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 14px;"
+            title="В корзину"
+          >🛒</button>
+        </div>
+
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+  function filterByTag(tag, btn) {
+    document.querySelectorAll('.tag-btn').forEach(function(b) {
+      b.style.background = '#f5f5f5';
+      b.style.color = '#333';
+    });
+    document.getElementById('tag-all').style.background = tag ? '#f5f5f5' : '#333';
+    document.getElementById('tag-all').style.color = tag ? '#333' : '#fff';
+    if (btn && tag) {
+      btn.style.background = '#333';
+      btn.style.color = '#fff';
+    }
+
+    document.querySelectorAll('.product-card').forEach(function(card) {
+      if (!tag) {
+        card.style.display = '';
+      } else {
+        var tags = card.getAttribute('data-tags') || '';
+        card.style.display = tags.split(';').indexOf(tag) !== -1 ? '' : 'none';
+      }
+    });
+  }
+
+  function addToCartFromList(title, price, image) {
+    var cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
+    cart.push({ title: title, price: price, image: image });
+    localStorage.setItem('mySimpleCart', JSON.stringify(cart));
+    if (window.updateBadge) window.updateBadge();
+  }
+</script>
