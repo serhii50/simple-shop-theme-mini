@@ -16,6 +16,8 @@ layout: default
 </div>
 
 <script>
+  var siteUrl = "{{ site.url }}{{ site.baseurl }}";
+
   function esc(str) {
     var d = document.createElement('div');
     d.appendChild(document.createTextNode(String(str)));
@@ -136,8 +138,13 @@ layout: default
     cart.forEach(function(item, index) {
       var qty = item.qty || 1;
       var price = parseFloat(item.price) || 0;
-      message += (index + 1) + '. ' + item.title + ' × ' + qty + ' — ' + (price * qty) + ' {{ site.currency }}\n';
-      total += price * qty;
+      var lineTotal = price * qty;
+      total += lineTotal;
+
+      message += (index + 1) + '. ' + item.title + ' × ' + qty + ' — ' + lineTotal.toLocaleString('ru-RU') + ' {{ site.currency }}\n';
+      if (item.id) {
+        message += '   🔗 ' + siteUrl + '/product/' + item.id + '.html\n';
+      }
     });
 
     message += '\n🛒 Сумма заказа: ' + total.toLocaleString('ru-RU') + ' {{ site.currency }}';

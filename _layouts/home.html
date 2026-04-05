@@ -22,7 +22,7 @@ layout: default
 </h1>
 
 {% if unique_tags.size > 0 %}
-<div class="tag-filters">
+<div class="tag-filters" id="tag-filters">
   <button id="tag-all" class="tag-btn tag-btn-active" onclick="filterByTag(null, this)">Все</button>
   {% for tag in unique_tags %}
     {% if tag != "" %}
@@ -35,26 +35,38 @@ layout: default
 <div id="product-grid">
   {% for item in site.data.products %}
     {% assign images = item.images | split: ';' %}
-    {% assign main_image = images[0] %}
     {% assign item_tags = item.tags | split: ';' %}
 
     <div class="product-card" data-tags="{{ item.tags }}">
       <div class="product-card-inner">
 
-        <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}">
-          <img src="{{ main_image }}" alt="{{ item.name | escape }}" class="product-thumb">
+        <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}" class="card-carousel" data-images="{{ item.images }}">
+          {% for img in images %}
+            <img src="{{ img }}" alt="{{ item.title | escape }}"{% if forloop.first %} class="active"{% endif %}>
+          {% endfor %}
+          {% if images.size > 1 %}
+            <div class="card-dots">
+              {% for img in images %}
+                <span class="card-dot{% if forloop.first %} active{% endif %}"></span>
+              {% endfor %}
+            </div>
+          {% endif %}
         </a>
+        {% if images.size > 1 %}
+          <button class="card-carousel-btn prev" onclick="event.preventDefault(); slideCard(this.closest('.product-card'), -1)">‹</button>
+          <button class="card-carousel-btn next" onclick="event.preventDefault(); slideCard(this.closest('.product-card'), 1)">›</button>
+        {% endif %}
 
         <div class="product-card-body">
           <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}">
-            <h3 class="product-name">{{ item.name }}</h3>
+            <h3 class="product-name">{{ item.title }}</h3>
           </a>
 
           {% if item.tags != "" and item.tags != nil %}
           <div class="product-tags">
             {% for tag in item_tags %}
               {% if tag != "" %}
-              <span class="product-tag">{{ tag }}</span>
+              <button class="product-tag" onclick="clickTag('{{ tag }}')">{{ tag }}</button>
               {% endif %}
             {% endfor %}
           </div>
@@ -63,10 +75,12 @@ layout: default
           <div class="product-footer">
             <span class="product-price">{{ item.price }} {{ site.currency }}</span>
             <button
-              onclick="addToCartFromList('{{ item.id | escape }}', '{{ item.name | escape }}', '{{ item.price }}', '{{ main_image | escape }}')"
+              onclick="addToCartFromList('{{ item.id | escape }}', '{{ item.title | escape }}', '{{ item.price }}', '{{ images[0] | escape }}')"
               class="btn-cart"
               title="В корзину"
-            >🛒</button>
+            >
+              <svg class="btn-cart-icon" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </button>
           </div>
         </div>
 
@@ -76,6 +90,38 @@ layout: default
 </div>
 
 <script>
+  /* Карусель на карточке */
+  function slideCard(card, dir) {
+    var imgs = card.querySelectorAll('.card-carousel img');
+    var dots = card.querySelectorAll('.card-dot');
+    if (imgs.length < 2) return;
+
+    var current = 0;
+    imgs.forEach(function(img, i) {
+      if (img.classList.contains('active')) current = i;
+    });
+
+    imgs[current].classList.remove('active');
+    if (dots[current]) dots[current].classList.remove('active');
+
+    var next = (current + dir + imgs.length) % imgs.length;
+    imgs[next].classList.add('active');
+    if (dots[next]) dots[next].classList.add('active');
+  }
+
+  /* Клик по тегу на карточке */
+  function clickTag(tag) {
+    var filtersEl = document.getElementById('tag-filters');
+    if (filtersEl) {
+      filtersEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    var btn = document.getElementById('tag-' + tag);
+    setTimeout(function() {
+      filterByTag(tag, btn);
+    }, 300);
+  }
+
+  /* Фильтр по тегу */
   function filterByTag(tag, btn) {
     document.querySelectorAll('.tag-btn').forEach(function(b) {
       b.classList.remove('tag-btn-active');
@@ -95,6 +141,7 @@ layout: default
     });
   }
 
+  /* Добавление в корзину */
   function addToCartFromList(id, title, price, image) {
     var cart = getCart();
     var found = false;

@@ -3,18 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ page.name | default: page.title | default: site.title }}</title>
+  <title>{{ page.title | default: site.title }}</title>
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% seo %}
+  {{ custom_head }}
 </head>
 <body>
   <header class="site-header">
     <div class="site-brand">
       <a href="{{ '/' | relative_url }}">{{ site.title }}</a>
-      <span class="theme-label">{{ site.theme }}</span>
     </div>
     <nav class="site-nav">
-      <a href="{{ '/cart' | relative_url }}">🛒 Корзина <span id="cart-badge">0</span></a>
+      <a href="{{ '/cart' | relative_url }}">
+        <svg class="nav-cart-icon" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        Корзина
+        <span id="cart-badge">0</span>
+      </a>
     </nav>
   </header>
 
@@ -24,6 +28,7 @@
 
   <footer class="site-footer">
     <p>&copy; {{ "now" | date: "%Y" }} {{ site.title }}</p>
+    <div class="footer-theme">{{ site.theme }}</div>
   </footer>
 
   <div id="toast" class="toast"></div>
@@ -44,9 +49,7 @@
     function updateBadge() {
       var cart = getCart();
       var count = 0;
-      cart.forEach(function(item) {
-        count += item.qty || 1;
-      });
+      cart.forEach(function(item) { count += item.qty || 1; });
       var badge = document.getElementById('cart-badge');
       if (badge) badge.innerText = count;
     }
