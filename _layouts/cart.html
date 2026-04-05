@@ -50,16 +50,34 @@ layout: default
       var div = document.createElement('div');
       div.className = 'cart-item';
 
-      var img = document.createElement('img');
-      img.src = String(item.image || '');
-      img.alt = String(item.title || '');
-      div.appendChild(img);
+      var productUrl = item.id ? (siteUrl + '/product/' + item.id + '.html') : '';
+
+      if (productUrl) {
+        var imgLink = document.createElement('a');
+        imgLink.href = productUrl;
+        var img = document.createElement('img');
+        img.src = String(item.image || '');
+        img.alt = String(item.title || '');
+        imgLink.appendChild(img);
+        div.appendChild(imgLink);
+      } else {
+        var img = document.createElement('img');
+        img.src = String(item.image || '');
+        img.alt = String(item.title || '');
+        div.appendChild(img);
+      }
 
       var info = document.createElement('div');
       info.className = 'cart-item-info';
-      info.innerHTML =
-        '<strong>' + esc(item.title) + '</strong>' +
-        '<span class="cart-item-price">' + esc(item.price) + ' {{ site.currency }}</span>';
+      if (productUrl) {
+        info.innerHTML =
+          '<a href="' + esc(productUrl) + '"><strong>' + esc(item.title) + '</strong></a>' +
+          '<span class="cart-item-price">' + esc(item.price) + ' {{ site.currency }}</span>';
+      } else {
+        info.innerHTML =
+          '<strong>' + esc(item.title) + '</strong>' +
+          '<span class="cart-item-price">' + esc(item.price) + ' {{ site.currency }}</span>';
+      }
       div.appendChild(info);
 
       var qtyWrap = document.createElement('div');
