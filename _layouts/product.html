@@ -7,28 +7,26 @@ layout: default
   <button onclick="window.history.back()">&larr; Назад</button>
 
   <h1>{{ page.name }}</h1>
-  
-  <p class="price" style="font-size: 1.5em; font-weight: bold;">
-    {{ page.price }} {{ site.currency }}
-  </p>
+
+  <p class="price">{{ page.price }} {{ site.currency }}</p>
 
   <div class="product-images">
     {% assign images = page.images | split: ';' %}
     {% for img in images %}
-      <img src="{{ img }}" alt="{{ page.name }}" style="max-width:300px; display:block; margin-bottom: 10px;">
+      <img src="{{ img }}" alt="{{ page.name }}">
     {% endfor %}
   </div>
 
-  <div class="product-description" style="margin-top: 20px;">
+  <div class="product-description">
     {% if page.description %}
       <p>{{ page.description }}</p>
     {% endif %}
     {{ content }}
   </div>
 
-  <button 
+  <button
     onclick="addToCart({ id: '{{ page.id }}', title: '{{ page.name }}', price: '{{ page.price }}', image: '{{ images[0] }}' })"
-    style="padding: 10px 20px; font-size: 1em; cursor: pointer; margin-top: 20px;"
+    class="btn-add-to-cart"
   >
     Добавить в корзину
   </button>
@@ -40,11 +38,10 @@ layout: default
     let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
     cart.push(product);
     localStorage.setItem('mySimpleCart', JSON.stringify(cart));
-    
+
     alert('Товар добавлен в корзину!');
-    
-    // Вызываем функцию обновления из default.html
-    if(typeof updateBadge === 'function') {
+
+    if (typeof updateBadge === 'function') {
       updateBadge();
     }
   }

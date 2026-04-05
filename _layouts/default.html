@@ -4,12 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.name | default: page.title | default: site.title }}</title>
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
   {% seo %}
 </head>
 <body>
   <header>
-    <a href="{{ '/' | relative_url }}">{{ site.title }}</a>
-    <small style="opacity: 0.5; margin-left: 8px;">{{ site.theme }}</small>
+    <div>
+      <a href="{{ '/' | relative_url }}">{{ site.title }}</a>
+      <small class="theme-label">{{ site.theme }}</small>
+    </div>
     <nav>
       <a href="{{ '/cart' | relative_url }}">Корзина (<strong id="cart-badge">0</strong>)</a>
     </nav>
@@ -31,7 +34,6 @@
         badge.innerText = cart.length;
       }
     }
-    // Вызываем проверку корзины при загрузке любой страницы
     document.addEventListener("DOMContentLoaded", updateBadge);
   </script>
 </body>
