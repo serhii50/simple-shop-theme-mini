@@ -40,7 +40,7 @@ layout: default
     <div class="product-card" data-tags="{{ item.tags }}">
       <div class="product-card-inner">
 
-        <div class="card-carousel" data-href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}">
+        <div class="card-carousel" data-href="{{ '/product/' | append: item.slug | append: '.html' | relative_url }}">
           {% for img in images %}
             <img src="{{ img }}" alt="{{ item.title | escape }}"{% if forloop.first %} class="active"{% endif %}>
           {% endfor %}
@@ -54,7 +54,7 @@ layout: default
         </div>
 
         <div class="product-card-body">
-          <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}">
+          <a href="{{ '/product/' | append: item.slug | append: '.html' | relative_url }}">
             <h3 class="product-name">{{ item.title }}</h3>
           </a>
 
@@ -71,7 +71,7 @@ layout: default
           <div class="product-footer">
             <span class="product-price">{{ item.price }} {{ site.currency }}</span>
             <button
-              onclick="addToCartFromList('{{ item.id | escape }}', '{{ item.title | escape }}', '{{ item.price }}', '{{ images[0] | escape }}')"
+              onclick="addToCartFromList('{{ item.slug | escape }}', '{{ item.title | escape }}', '{{ item.price }}', '{{ images[0] | escape }}')"
               class="btn-cart"
               title="В корзину"
             >
