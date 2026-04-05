@@ -26,14 +26,45 @@
     <p>&copy; {{ "now" | date: "%Y" }} {{ site.title }}</p>
   </footer>
 
+  <div id="toast" class="toast"></div>
+
   <script>
-    function updateBadge() {
-      let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
-      let badge = document.getElementById('cart-badge');
-      if (badge) {
-        badge.innerText = cart.length;
-      }
+    // Безопасное чтение корзины из localStorage
+    function getCart() {
+      try {
+        var data = JSON.parse(localStorage.getItem('mySimpleCart'));
+        if (Array.isArray(data)) return data;
+      } catch (e) {}
+      return [];
     }
+
+    // Сохранение корзины
+    function saveCart(cart) {
+      localStorage.setItem('mySimpleCart', JSON.stringify(cart));
+    }
+
+    // Обновление бейджа (учитывает quantity)
+    function updateBadge() {
+      var cart = getCart();
+      var count = 0;
+      cart.forEach(function(item) {
+        count += item.qty || 1;
+      });
+      var badge = document.getElementById('cart-badge');
+      if (badge) badge.innerText = count;
+    }
+
+    // Toast-уведомление вместо alert()
+    function showToast(text) {
+      var el = document.getElementById('toast');
+      if (!el) return;
+      el.textContent = text;
+      el.classList.add('toast-visible');
+      setTimeout(function() {
+        el.classList.remove('toast-visible');
+      }, 2000);
+    }
+
     document.addEventListener("DOMContentLoaded", updateBadge);
   </script>
 </body>

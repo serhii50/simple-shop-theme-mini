@@ -16,48 +16,106 @@ layout: default
 </div>
 
 <script>
+  // Экранирование строки для безопасной вставки в HTML
+  function esc(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(String(str)));
+    return d.innerHTML;
+  }
+
   function loadCart() {
-    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
-    let container = document.getElementById('cart-items');
-    let summary = document.getElementById('cart-summary');
-    let totalSpan = document.getElementById('total-price');
+    var cart = getCart();
+    var container = document.getElementById('cart-items');
+    var summary = document.getElementById('cart-summary');
+    var totalSpan = document.getElementById('total-price');
 
     container.innerHTML = '';
-    let total = 0;
+    var total = 0;
 
     if (cart.length === 0) {
       container.innerHTML = '<p class="cart-empty">В корзине пусто</p><a href="{{ "/" | relative_url }}">Вернуться к покупкам</a>';
       summary.style.display = 'none';
-      if (window.updateBadge) window.updateBadge();
+      updateBadge();
       return;
     }
 
     summary.style.display = 'block';
 
-    cart.forEach((item, index) => {
-      total += parseFloat(item.price) || 0;
-      let div = document.createElement('div');
+    cart.forEach(function(item, index) {
+      var qty = item.qty || 1;
+      var price = parseFloat(item.price) || 0;
+      total += price * qty;
+
+      var div = document.createElement('div');
       div.className = 'cart-item';
 
-      div.innerHTML = `
-        <img src="${item.image.replace(/"/g, '&quot;')}" alt="${item.title.replace(/"/g, '&quot;')}">
-        <div class="cart-item-info">
-          <strong>${item.title.replace(/</g, '&lt;')}</strong><br>
-          <span class="cart-item-price">${item.price.replace(/</g, '&lt;')} {{ site.currency }}</span>
-        </div>
-        <button onclick="removeItem(${index})" class="btn-remove">Удалить</button>
-      `;
+      var img = document.createElement('img');
+      img.src = String(item.image || '');
+      img.alt = String(item.title || '');
+      div.appendChild(img);
+
+      var info = document.createElement('div');
+      info.className = 'cart-item-info';
+      info.innerHTML =
+        '<strong>' + esc(item.title) + '</strong><br>' +
+        '<span class="cart-item-price">' + esc(item.price) + ' {{ site.currency }}</span>';
+      div.appendChild(info);
+
+      // Контролы количества
+      var qtyWrap = document.createElement('div');
+      qtyWrap.className = 'qty-controls';
+
+      var btnMinus = document.createElement('button');
+      btnMinus.className = 'btn-qty';
+      btnMinus.textContent = '−';
+      btnMinus.setAttribute('data-index', index);
+      btnMinus.onclick = function() { changeQty(index, -1); };
+
+      var qtySpan = document.createElement('span');
+      qtySpan.className = 'qty-value';
+      qtySpan.textContent = qty;
+
+      var btnPlus = document.createElement('button');
+      btnPlus.className = 'btn-qty';
+      btnPlus.textContent = '+';
+      btnPlus.setAttribute('data-index', index);
+      btnPlus.onclick = function() { changeQty(index, 1); };
+
+      qtyWrap.appendChild(btnMinus);
+      qtyWrap.appendChild(qtySpan);
+      qtyWrap.appendChild(btnPlus);
+      div.appendChild(qtyWrap);
+
+      var btnRemove = document.createElement('button');
+      btnRemove.className = 'btn-remove';
+      btnRemove.textContent = 'Удалить';
+      btnRemove.onclick = function() { removeItem(index); };
+      div.appendChild(btnRemove);
+
       container.appendChild(div);
     });
 
     totalSpan.innerText = total.toLocaleString('ru-RU');
-    if (window.updateBadge) window.updateBadge();
+    updateBadge();
+  }
+
+  function changeQty(index, delta) {
+    var cart = getCart();
+    if (!cart[index]) return;
+    var newQty = (cart[index].qty || 1) + delta;
+    if (newQty < 1) {
+      cart.splice(index, 1);
+    } else {
+      cart[index].qty = newQty;
+    }
+    saveCart(cart);
+    loadCart();
   }
 
   function removeItem(index) {
-    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
+    var cart = getCart();
     cart.splice(index, 1);
-    localStorage.setItem('mySimpleCart', JSON.stringify(cart));
+    saveCart(cart);
     loadCart();
   }
 
@@ -69,23 +127,31 @@ layout: default
   }
 
   function checkout(messenger) {
-    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
-    let total = 0;
-    let message = "Здравствуйте! Хочу сделать заказ:\n\n";
+    var cart = getCart();
+    if (cart.length === 0) {
+      showToast('Корзина пуста');
+      return;
+    }
 
-    cart.forEach((item, index) => {
-      message += `${index + 1}. ${item.title} — ${item.price} {{ site.currency }}\n`;
-      total += parseFloat(item.price) || 0;
+    var total = 0;
+    var message = "Здравствуйте! Хочу сделать заказ:\n\n";
+
+    cart.forEach(function(item, index) {
+      var qty = item.qty || 1;
+      var price = parseFloat(item.price) || 0;
+      var line = (index + 1) + '. ' + item.title + ' × ' + qty + ' — ' + (price * qty) + ' {{ site.currency }}\n';
+      message += line;
+      total += price * qty;
     });
 
-    message += `\n🛒 *Сумма заказа:* ${total.toLocaleString('ru-RU')} {{ site.currency }}`;
+    message += '\n🛒 *Сумма заказа:* ' + total.toLocaleString('ru-RU') + ' {{ site.currency }}';
 
-    let phone = "{{ site.whatsapp_phone }}";
-    let tgUser = "{{ site.telegram_user }}";
+    var phone = "{{ site.whatsapp_phone }}";
+    var tgUser = "{{ site.telegram_user }}";
 
-    let url = messenger === 'wa'
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-      : `https://t.me/${tgUser}?text=${encodeURIComponent(message)}`;
+    var url = messenger === 'wa'
+      ? 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message)
+      : 'https://t.me/' + tgUser + '?text=' + encodeURIComponent(message);
 
     window.location.href = url;
   }

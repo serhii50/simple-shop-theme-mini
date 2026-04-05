@@ -40,7 +40,7 @@ layout: default
       <div class="product-card-inner">
 
         <a href="{{ '/product/' | append: item.id | append: '.html' | relative_url }}">
-          <img src="{{ main_image }}" alt="{{ item.name }}" class="product-thumb">
+          <img src="{{ main_image }}" alt="{{ item.name | escape }}" class="product-thumb">
           <h3 class="product-name">{{ item.name }}</h3>
         </a>
 
@@ -57,7 +57,7 @@ layout: default
         <div class="product-footer">
           <p class="product-price">{{ item.price }} {{ site.currency }}</p>
           <button
-            onclick="addToCartFromList('{{ item.id }}', '{{ item.name | escape }}', '{{ item.price }}', '{{ main_image }}')"
+            onclick="addToCartFromList('{{ item.id | escape }}', '{{ item.name | escape }}', '{{ item.price }}', '{{ main_image | escape }}')"
             class="btn-cart"
             title="В корзину"
           >🛒</button>
@@ -90,9 +90,19 @@ layout: default
   }
 
   function addToCartFromList(id, title, price, image) {
-    var cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
-    cart.push({ id: id, title: title, price: price, image: image });
-    localStorage.setItem('mySimpleCart', JSON.stringify(cart));
-    if (window.updateBadge) window.updateBadge();
+    var cart = getCart();
+    var found = false;
+    cart.forEach(function(item) {
+      if (item.id === id) {
+        item.qty = (item.qty || 1) + 1;
+        found = true;
+      }
+    });
+    if (!found) {
+      cart.push({ id: id, title: title, price: price, image: image, qty: 1 });
+    }
+    saveCart(cart);
+    updateBadge();
+    showToast('Добавлено: ' + title);
   }
 </script>

@@ -13,7 +13,7 @@ layout: default
   <div class="product-images">
     {% assign images = page.images | split: ';' %}
     {% for img in images %}
-      <img src="{{ img }}" alt="{{ page.name }}">
+      <img src="{{ img }}" alt="{{ page.name | escape }}">
     {% endfor %}
   </div>
 
@@ -25,7 +25,7 @@ layout: default
   </div>
 
   <button
-    onclick="addToCart({ id: '{{ page.id }}', title: '{{ page.name }}', price: '{{ page.price }}', image: '{{ images[0] }}' })"
+    onclick="addToCart('{{ page.id | escape }}', '{{ page.name | escape }}', '{{ page.price }}', '{{ images[0] | escape }}')"
     class="btn-add-to-cart"
   >
     Добавить в корзину
@@ -34,15 +34,20 @@ layout: default
 </article>
 
 <script>
-  function addToCart(product) {
-    let cart = JSON.parse(localStorage.getItem('mySimpleCart')) || [];
-    cart.push(product);
-    localStorage.setItem('mySimpleCart', JSON.stringify(cart));
-
-    alert('Товар добавлен в корзину!');
-
-    if (typeof updateBadge === 'function') {
-      updateBadge();
+  function addToCart(id, title, price, image) {
+    var cart = getCart();
+    var found = false;
+    cart.forEach(function(item) {
+      if (item.id === id) {
+        item.qty = (item.qty || 1) + 1;
+        found = true;
+      }
+    });
+    if (!found) {
+      cart.push({ id: id, title: title, price: price, image: image, qty: 1 });
     }
+    saveCart(cart);
+    updateBadge();
+    showToast('Добавлено: ' + title);
   }
 </script>
