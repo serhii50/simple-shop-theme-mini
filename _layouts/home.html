@@ -40,7 +40,7 @@ layout: default
     <div class="product-card" data-tags="{{ item.tags }}">
       <div class="product-card-inner">
 
-        <div class="card-carousel" data-href="{{ '/product/' | append: item.slug | append: '.html' | relative_url }}">
+        <div class="card-carousel" data-href="{{ site.baseurl }}/product/{{ item.slug }}/">
           {% for img in images %}
             <img src="{{ img }}" alt="{{ item.title | escape }}"{% if forloop.first %} class="active"{% endif %}>
           {% endfor %}
@@ -54,7 +54,7 @@ layout: default
         </div>
 
         <div class="product-card-body">
-          <a href="{{ '/product/' | append: item.slug | append: '.html' | relative_url }}">
+          <a href="{{ site.baseurl }}/product/{{ item.slug }}/">
             <h3 class="product-name">{{ item.title }}</h3>
           </a>
 
