@@ -40,7 +40,7 @@ layout: default
     <div class="gallery-thumbs">
       {% for img in images %}
         <div class="gallery-thumb{% if forloop.first %} active{% endif %}" onclick="switchImage(this, '{{ img }}')">
-          <img src="{{ img }}" alt="{{ page.title | escape }}">
+          <img src="{{ img }}" alt="{{ page.title | escape }}"{% unless forloop.first %} loading="lazy"{% endunless %}>
         </div>
       {% endfor %}
     </div>

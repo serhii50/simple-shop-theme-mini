@@ -42,7 +42,7 @@ layout: default
 
         <div class="card-carousel" data-href="{{ site.baseurl }}/product/{{ item.slug }}/">
           {% for img in images %}
-            <img src="{{ img }}" alt="{{ item.title | escape }}"{% if forloop.first %} class="active"{% endif %}>
+            <img src="{{ img }}" alt="{{ item.title | escape }}"{% if forloop.first %} class="active"{% else %} loading="lazy"{% endif %}>
           {% endfor %}
           {% if images.size > 1 %}
             <div class="card-dots">
