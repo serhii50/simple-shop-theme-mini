@@ -2,21 +2,20 @@
 layout: default
 ---
 
-<h1>Ваша корзина</h1>
+<h1 class="cart-title">Корзина</h1>
 
 <div id="cart-items"></div>
 
 <div id="cart-summary" style="display: none;">
-  <h2>Итого: <span id="total-price">0</span> {{ site.currency }}</h2>
+  <h2 class="cart-total">Итого: <span id="total-price">0</span> {{ site.currency }}</h2>
   <div class="checkout-btns">
-    <button onclick="checkout('wa')" class="btn-wa">WhatsApp</button>
-    <button onclick="checkout('tg')" class="btn-tg">Telegram</button>
+    <button onclick="checkout('wa')" class="btn-checkout btn-wa">WhatsApp</button>
+    <button onclick="checkout('tg')" class="btn-checkout btn-tg">Telegram</button>
   </div>
   <button onclick="clearCart()" class="btn-clear">Очистить корзину</button>
 </div>
 
 <script>
-  // Экранирование строки для безопасной вставки в HTML
   function esc(str) {
     var d = document.createElement('div');
     d.appendChild(document.createTextNode(String(str)));
@@ -33,7 +32,7 @@ layout: default
     var total = 0;
 
     if (cart.length === 0) {
-      container.innerHTML = '<p class="cart-empty">В корзине пусто</p><a href="{{ "/" | relative_url }}">Вернуться к покупкам</a>';
+      container.innerHTML = '<div class="cart-empty"><p>Корзина пуста</p><a href="{{ "/" | relative_url }}">← Вернуться к покупкам</a></div>';
       summary.style.display = 'none';
       updateBadge();
       return;
@@ -57,18 +56,16 @@ layout: default
       var info = document.createElement('div');
       info.className = 'cart-item-info';
       info.innerHTML =
-        '<strong>' + esc(item.title) + '</strong><br>' +
+        '<strong>' + esc(item.title) + '</strong>' +
         '<span class="cart-item-price">' + esc(item.price) + ' {{ site.currency }}</span>';
       div.appendChild(info);
 
-      // Контролы количества
       var qtyWrap = document.createElement('div');
       qtyWrap.className = 'qty-controls';
 
       var btnMinus = document.createElement('button');
       btnMinus.className = 'btn-qty';
       btnMinus.textContent = '−';
-      btnMinus.setAttribute('data-index', index);
       btnMinus.onclick = function() { changeQty(index, -1); };
 
       var qtySpan = document.createElement('span');
@@ -78,7 +75,6 @@ layout: default
       var btnPlus = document.createElement('button');
       btnPlus.className = 'btn-qty';
       btnPlus.textContent = '+';
-      btnPlus.setAttribute('data-index', index);
       btnPlus.onclick = function() { changeQty(index, 1); };
 
       qtyWrap.appendChild(btnMinus);
@@ -88,7 +84,8 @@ layout: default
 
       var btnRemove = document.createElement('button');
       btnRemove.className = 'btn-remove';
-      btnRemove.textContent = 'Удалить';
+      btnRemove.textContent = '✕';
+      btnRemove.title = 'Удалить';
       btnRemove.onclick = function() { removeItem(index); };
       div.appendChild(btnRemove);
 
@@ -139,12 +136,11 @@ layout: default
     cart.forEach(function(item, index) {
       var qty = item.qty || 1;
       var price = parseFloat(item.price) || 0;
-      var line = (index + 1) + '. ' + item.title + ' × ' + qty + ' — ' + (price * qty) + ' {{ site.currency }}\n';
-      message += line;
+      message += (index + 1) + '. ' + item.title + ' × ' + qty + ' — ' + (price * qty) + ' {{ site.currency }}\n';
       total += price * qty;
     });
 
-    message += '\n🛒 *Сумма заказа:* ' + total.toLocaleString('ru-RU') + ' {{ site.currency }}';
+    message += '\n🛒 Сумма заказа: ' + total.toLocaleString('ru-RU') + ' {{ site.currency }}';
 
     var phone = "{{ site.whatsapp_phone }}";
     var tgUser = "{{ site.telegram_user }}";

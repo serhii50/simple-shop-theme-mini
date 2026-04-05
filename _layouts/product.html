@@ -4,11 +4,11 @@ layout: default
 
 <article class="product-detail">
 
-  <button onclick="window.history.back()">&larr; Назад</button>
+  <button class="btn-back" onclick="window.history.back()">&larr; Назад</button>
 
-  <h1>{{ page.name }}</h1>
+  <h1 class="product-detail-title">{{ page.name }}</h1>
 
-  <p class="price">{{ page.price }} {{ site.currency }}</p>
+  <p class="product-detail-price">{{ page.price }} {{ site.currency }}</p>
 
   <div class="product-images">
     {% assign images = page.images | split: ';' %}
@@ -28,7 +28,7 @@ layout: default
     onclick="addToCart('{{ page.id | escape }}', '{{ page.name | escape }}', '{{ page.price }}', '{{ images[0] | escape }}')"
     class="btn-add-to-cart"
   >
-    Добавить в корзину
+    🛒 Добавить в корзину
   </button>
 
 </article>
@@ -48,6 +48,6 @@ layout: default
     }
     saveCart(cart);
     updateBadge();
-    showToast('Добавлено: ' + title);
+    showToast('✓ ' + title);
   }
 </script>

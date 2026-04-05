@@ -8,28 +8,27 @@
   {% seo %}
 </head>
 <body>
-  <header>
-    <div>
+  <header class="site-header">
+    <div class="site-brand">
       <a href="{{ '/' | relative_url }}">{{ site.title }}</a>
-      <small class="theme-label">{{ site.theme }}</small>
+      <span class="theme-label">{{ site.theme }}</span>
     </div>
-    <nav>
-      <a href="{{ '/cart' | relative_url }}">Корзина (<strong id="cart-badge">0</strong>)</a>
+    <nav class="site-nav">
+      <a href="{{ '/cart' | relative_url }}">🛒 Корзина <span id="cart-badge">0</span></a>
     </nav>
   </header>
 
-  <main>
+  <main class="site-main">
     {{ content }}
   </main>
 
-  <footer>
+  <footer class="site-footer">
     <p>&copy; {{ "now" | date: "%Y" }} {{ site.title }}</p>
   </footer>
 
   <div id="toast" class="toast"></div>
 
   <script>
-    // Безопасное чтение корзины из localStorage
     function getCart() {
       try {
         var data = JSON.parse(localStorage.getItem('mySimpleCart'));
@@ -38,12 +37,10 @@
       return [];
     }
 
-    // Сохранение корзины
     function saveCart(cart) {
       localStorage.setItem('mySimpleCart', JSON.stringify(cart));
     }
 
-    // Обновление бейджа (учитывает quantity)
     function updateBadge() {
       var cart = getCart();
       var count = 0;
@@ -54,7 +51,6 @@
       if (badge) badge.innerText = count;
     }
 
-    // Toast-уведомление вместо alert()
     function showToast(text) {
       var el = document.getElementById('toast');
       if (!el) return;
@@ -62,7 +58,7 @@
       el.classList.add('toast-visible');
       setTimeout(function() {
         el.classList.remove('toast-visible');
-      }, 2000);
+      }, 2200);
     }
 
     document.addEventListener("DOMContentLoaded", updateBadge);
