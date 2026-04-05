@@ -42,7 +42,7 @@ layout: default
 
         <div class="card-carousel" data-href="{{ site.baseurl }}/product/{{ item.slug }}/">
           {% for img in images %}
-            <img src="{{ img }}" alt="{{ item.title | escape }}"{% if forloop.first %} class="active"{% else %} loading="lazy"{% endif %}>
+            <img {% if forloop.first %}src="{{ img }}" class="active"{% else %}data-src="{{ img }}"{% endif %} alt="{{ item.title | escape }}" loading="lazy">
           {% endfor %}
           {% if images.size > 1 %}
             <div class="card-dots">
@@ -116,11 +116,25 @@ layout: default
     if (dots[index]) dots[index].classList.add('active');
   }
 
-  /* Инициализация каруселей: клик по dots, swipe, клик по фото */
+  /* Инициализация каруселей: клик по dots, swipe, клик по фото, lazy load */
+  function initLazyCarousel(carousel) {
+    if (carousel.dataset.lazyLoaded) return;
+    var imgs = carousel.querySelectorAll('img[data-src]');
+    imgs.forEach(function(img) {
+      img.src = img.getAttribute('data-src');
+      img.removeAttribute('data-src');
+    });
+    carousel.dataset.lazyLoaded = 'true';
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.card-carousel').forEach(function(carousel) {
       var startX = 0;
       var moved = false;
+
+      // Ленивая подгрузка при наведении или касании
+      carousel.addEventListener('mouseenter', function() { initLazyCarousel(carousel); });
+      carousel.addEventListener('touchstart', function() { initLazyCarousel(carousel); }, { passive: true });
 
       /* Клик по dots */
       carousel.querySelectorAll('.card-dot').forEach(function(dot) {
